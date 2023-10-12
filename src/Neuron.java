@@ -77,6 +77,23 @@ public class Neuron {
         }
     }
 
+    public void computeWeightedSum() {
+        S = 0;
+        if (type == NeuronType.INPUT) {
+            S = y;
+        } else {
+            for (Neuron input : inputs) {
+                S += input.getY() * input.weights.getWeight(this);
+            }
+        }
+    }
+
+    public void computeActivation() {
+        if (type != NeuronType.INPUT) {
+            y = Utils.sigmoid(S);
+        }
+    }
+
     // Step 2: backward
     public void computeAndSetErrorSignal(double C) {
         E = 0;

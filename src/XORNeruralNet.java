@@ -93,8 +93,13 @@ public class XORNeruralNet extends AbstractNeuralNet {
 
     @Override
     public double outputFor(double[] X) {
+//        for (Layer layer : layers) {
+//            layer.forwardPropagation(X);
+//            if (layer.getType() == NeuronType.OUTPUT) {
+//                return layer.getOutput();
+//            }
+//        }
         for (Layer layer : layers) {
-            layer.forwardPropagation(X);
             if (layer.getType() == NeuronType.OUTPUT) {
                 return layer.getOutput();
             }
@@ -111,13 +116,16 @@ public class XORNeruralNet extends AbstractNeuralNet {
         for (int i = layers.size() - 1; i >= 0; i--) {
             Layer layer = layers.get(i);
             layer.computeAndSetErrorSignals(argValue);
-        }
-
-        for (Layer layer : layers) {
             layer.updateWeights();
         }
 
-        double y = outputFor(X);
+        double y = 0;
+        for (Layer layer : layers) {
+            if (layer.getType() == NeuronType.OUTPUT) {
+                y = layer.getOutput();
+            }
+        }
+
         return Math.pow(y - argValue, 2);
     }
 
