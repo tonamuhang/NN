@@ -2,11 +2,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Neuron {
-    enum NeuronType {
-        HIDDEN,
-        OUTPUT
-    }
-
     private final Weight weights;
     private final NeuronType type;
     private double S;
@@ -19,6 +14,16 @@ public class Neuron {
     public Neuron(NeuronType type, double p) {
         this.weights = new Weight();
         this.type = type;
+        this.p = p;
+    }
+
+    public Neuron(double x, NeuronType type, double p) {
+        if (type != NeuronType.INPUT) {
+            throw new RuntimeException("Type must be INPUT when provided x");
+        }
+        this.weights = new Weight();
+        this.type = type;
+        this.y = x;
         this.p = p;
     }
 
@@ -51,7 +56,7 @@ public class Neuron {
     }
 
     // Step 1: forward
-    private void computeAndSetWeightedSum() {
+    public void computeAndSetWeightedSum() {
         S = 0;
         for (Neuron input : inputs) {
             S += input.getY() * input.weights.getWeight(this);
@@ -59,25 +64,26 @@ public class Neuron {
     }
 
     // Step 2: backward
-    private void computeAndSetError() {
-        E = 0;
+    public double computeAndSetErrorSignal(double C) {
         if (type == NeuronType.OUTPUT) {
-
+            return (C - y) * y * (1 - y);
         } else {
-
+            
         }
+        return E;
     }
 
     // Step 3
-    private void updateWeights() {
+    public void updateWeights() {
         for (Neuron neuron : weights.getOutputNeurons()) {
             double delta = p * neuron.E * weights.getWeight(neuron);
             weights.setWeight(neuron, weights.getWeight(neuron) + delta);
         }
     }
 
-    public void computeAndSetOutput() {
+    public double computeAndSetOutput() {
         y = Utils.sigmoid(S);
+        return y;
     }
 
     public double getS() {
@@ -101,7 +107,9 @@ public class Neuron {
     }
 
     public void setY(double y) {
-        this.y = y;
+        if (this.y == 0 && type == NeuronType.INPUT) {
+            this.y = y;
+        }
     }
 
     public double getP() {
@@ -127,4 +135,9 @@ public class Neuron {
     public void setC(double C) {
         this.C = C;
     }
+
+    public NeuronType getType() {
+        return type;
+    }
+
 }

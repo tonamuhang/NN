@@ -41,13 +41,13 @@ public abstract class AbstractNeuron {
 
     public void resetWeights() {
         for (int i = 0; i < weights.length; i++) {
-            weights[i].resetWeight();
+            weights[i].resetWeights();
         }
     }
 
     public void initializeWeights() {
         for (int i = 0; i < weights.length; i++) {
-            weights[i].initializeWeight();
+            weights[i].initializeWeights();
         }
     }
 

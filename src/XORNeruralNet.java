@@ -8,15 +8,16 @@ import java.util.List;
 public class XORNeruralNet extends AbstractNeuralNet {
     private List<Layer> layers = new ArrayList<>();
     private Gson gson = new Gson();
-    private Layer hiddenLayer = new Layer();
-    private Layer outputLayer = new Layer();
+    private Layer inputLayer;
+    private Layer hiddenLayer;
+    private Layer outputLayer;
 
     // Training data
     double[][] trainingData = {
-            {0, 0},
-            {0, 1},
-            {1, 0},
-            {1, 1}
+            {0, 0, 1},
+            {0, 1, 1},
+            {1, 0, 1},
+            {1, 1, 1}
     };
 
     double[] trainingLabels = {0, 1, 1, 0};
@@ -33,8 +34,35 @@ public class XORNeruralNet extends AbstractNeuralNet {
      */
     public XORNeruralNet(int argNumInputs, int argNumHidden, double argLearningRate, double argMomentumTerm, double argA, double argB) {
         super(argNumInputs, argNumHidden, argLearningRate, argMomentumTerm, argA, argB);
-        layers.add(hiddenLayer);
-        layers.add(outputLayer);
+        inputLayer = new Layer(NeuronType.INPUT);
+        hiddenLayer = new Layer(NeuronType.HIDDEN);
+        outputLayer = new Layer(NeuronType.OUTPUT);
+
+        // input
+        Neuron input1 = new Neuron(NeuronType.INPUT, argLearningRate);
+        Neuron input2 = new Neuron(NeuronType.INPUT, argLearningRate);
+        Neuron biasInput = new Neuron(NeuronType.INPUT, argLearningRate);
+
+        // hidden
+        Neuron neuron1 = new Neuron(NeuronType.HIDDEN, argLearningRate);
+        Neuron neuron2 = new Neuron(NeuronType.HIDDEN, argLearningRate);
+        Neuron neuron3 = new Neuron(NeuronType.HIDDEN, argLearningRate);
+        Neuron neuron4 = new Neuron(NeuronType.HIDDEN, argLearningRate);
+        Neuron output = new Neuron(NeuronType.HIDDEN, argLearningRate);
+
+        inputLayer.addNeuron(input1);
+        inputLayer.addNeuron(input2);
+        hiddenLayer.addNeuron(neuron1);
+        hiddenLayer.addNeuron(neuron2);
+        hiddenLayer.addNeuron(neuron3);
+        hiddenLayer.addNeuron(neuron4);
+        outputLayer.addNeuron(output);
+
+        inputLayer.connectToLayer(hiddenLayer);
+        hiddenLayer.connectToLayer(outputLayer);
+        inputLayer.initializeWeights();
+        hiddenLayer.initializeWeights();
+        outputLayer.initializeWeights();
     }
 
 
@@ -54,6 +82,7 @@ public class XORNeruralNet extends AbstractNeuralNet {
     public double outputFor(double[] X) {
         for (Layer layer : layers) {
             for (Neuron neuron : layer.getNeurons()) {
+                neuron.computeAndSetWeightedSum();  
                 neuron.computeAndSetOutput();
             }
         }
@@ -65,14 +94,14 @@ public class XORNeruralNet extends AbstractNeuralNet {
         // while total error < accepted error
         // forward, backward
         // log total error
-
-        for (int i = 0; i < 10000; i++) {
-            for (int j = 0; j < trainingData.length; j++) {
-                double[] input = trainingData[j];
-                double target = trainingLabels[j];
-
-                laye
+        double totalError = Double.MAX_VALUE;
+        double[] errors = new double[argNumInputs];
+        double desired = 0;
+        while (totalError > desired) {
+            for (int i = 0; i < argNumInputs; i++) {
+                errors[i] = outputLayer.getOutput();
             }
+            totalError = -1;
         }
         return 0;
     }

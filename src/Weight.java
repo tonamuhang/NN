@@ -9,6 +9,7 @@ public class Weight {
 
     public Weight() {
         this.weights = new HashMap<>();
+        this.lastChanges = new HashMap<>();
     }
 
     public Weight(Map<Neuron, Double> weights, Map<Neuron, Double> lastChanges) {

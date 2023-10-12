@@ -4,13 +4,16 @@ import java.util.List;
 public class Layer {
     private List<Neuron> neurons;
     private int inputSize;
+    private NeuronType type;
 
-    public Layer() {
-        neurons = new ArrayList<>();
+    public Layer(NeuronType type) {
+        this.neurons = new ArrayList<>();
+        this.type = type;
     }
 
-    public Layer(List<Neuron> neurons) {
+    public Layer(List<Neuron> neurons, NeuronType type) {
         this.neurons = neurons;
+        this.type = type;
     }
 
     public void connectToLayer(Layer layer) {
@@ -39,14 +42,45 @@ public class Layer {
         return this.neurons;
     }
 
-    public void forwardPropagation() {
+    public NeuronType getType() {
+        return type;
+    }
+
+    public void setType(NeuronType type) {
+        this.type = type;
+    }
+
+    public void forwardPropagation(double[] inputs) {
         for (Neuron neuron : neurons) {
-            neuron.
+            neuron.computeAndSetWeightedSum();
+            neuron.computeAndSetOutput();
         }
     }
 
     public void backwardPropagation() {
+        for (Neuron neuron : neurons) {
+            
+        }
+    }
+
+    public void updateWeights() {
+        for (Neuron neuron : neurons) {
+            neuron.updateWeights();
+        }
     }
 
 
+    // Only works for one neuron outputs
+    public double getOutput() {
+        if (type != NeuronType.OUTPUT) {
+            throw new RuntimeException("Layer is not output layer");
+        }
+        return neurons.get(0).getY();
+    }
+
+    public void setInputNeurons(double[] X) {
+        for (int i = 0; i < neurons.size(); i++) {
+            neurons.get(i).setY(X[i]);
+        }
+    }
 }
