@@ -9,15 +9,17 @@ public class Neuron {
     private double y;
     private double p;
     private double C;
+    private double a;
     private List<Neuron> inputs = new ArrayList<>();
 
-    public Neuron(NeuronType type, double p) {
+    public Neuron(NeuronType type, double p, double a) {
         this.weights = new Weight();
         this.type = type;
         this.p = p;
+        this.a = a;
     }
 
-    public Neuron(double x, NeuronType type, double p) {
+    public Neuron(double x, NeuronType type, double p, double a) {
         if (type != NeuronType.INPUT) {
             throw new RuntimeException("Type must be INPUT when provided x");
         }
@@ -25,9 +27,10 @@ public class Neuron {
         this.type = type;
         this.y = x;
         this.p = p;
+        this.a = a;
     }
 
-    public Neuron(Weight weights, NeuronType type, double S, double E, double y, double p, double C, List<Neuron> inputs) {
+    public Neuron(Weight weights, NeuronType type, double S, double E, double y, double p, double C, double a, List<Neuron> inputs) {
         this.weights = weights;
         this.type = type;
         this.S = S;
@@ -35,6 +38,7 @@ public class Neuron {
         this.y = y;
         this.p = p;
         this.C = C;
+        this.a = a;
         this.inputs = inputs;
     }
 
@@ -58,32 +62,44 @@ public class Neuron {
     // Step 1: forward
     public void computeAndSetWeightedSum() {
         S = 0;
-        for (Neuron input : inputs) {
-            S += input.getY() * input.weights.getWeight(this);
+        if (type == NeuronType.INPUT) {
+            S = y;
+        } else {
+            for (Neuron input : inputs) {
+                S += input.getY() * input.weights.getWeight(this);
+            }
+        }
+    }
+
+    public void computeAndSetActivation() {
+        if (type != NeuronType.INPUT) {
+            y = Utils.sigmoid(S);
         }
     }
 
     // Step 2: backward
-    public double computeAndSetErrorSignal(double C) {
+    public void computeAndSetErrorSignal(double C) {
+        E = 0;
+//        double fSi = y * (1 - y);
+        double fSi = (1 - Math.pow(y, 2)) / 2;
         if (type == NeuronType.OUTPUT) {
-            return (C - y) * y * (1 - y);
+            E = (C - y) * fSi;
+        } else if (type == NeuronType.INPUT) {
+            E = 0;
         } else {
-            
+            for (Neuron outputNeuron : weights.getOutputNeurons()) {
+                E += weights.getWeight(outputNeuron) * outputNeuron.E * fSi;
+            }
         }
-        return E;
     }
 
     // Step 3
     public void updateWeights() {
-        for (Neuron neuron : weights.getOutputNeurons()) {
-            double delta = p * neuron.E * weights.getWeight(neuron);
-            weights.setWeight(neuron, weights.getWeight(neuron) + delta);
+        for (Neuron outputNeuron : weights.getOutputNeurons()) {
+            double delta = p * outputNeuron.E * this.y;
+            double momentum = a * weights.getLastChanges().get(outputNeuron);
+            weights.setWeight(outputNeuron, weights.getWeight(outputNeuron) + delta + momentum);
         }
-    }
-
-    public double computeAndSetOutput() {
-        y = Utils.sigmoid(S);
-        return y;
     }
 
     public double getS() {

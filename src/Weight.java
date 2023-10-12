@@ -51,7 +51,7 @@ public class Weight {
     public void setWeight(Neuron neuron, double weight) {
         double oldWeight = weights.get(neuron);
         weights.put(neuron, weight);
-        lastChanges.put(neuron, weight - oldWeight);
+        lastChanges.put(neuron, oldWeight - weight);
     }
 
     public void setWeights(Map<Neuron, Double> weights) {

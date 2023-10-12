@@ -19,8 +19,15 @@ public class XORNeruralNet extends AbstractNeuralNet {
             {1, 0, 1},
             {1, 1, 1}
     };
+    double[][] trainingDataBipolar = {
+            {-1, -1, 1},
+            {-1, 1, 1},
+            {1, -1, 1},
+            {1, 1, 1}
+    };
 
     double[] trainingLabels = {0, 1, 1, 0};
+    double[] trainingLabelsBipolar = {-1, 1, 1, -1};
 
     /**
      * * Constructor. (Cannot be declared in an interface, but your implementation will need one)
@@ -39,19 +46,20 @@ public class XORNeruralNet extends AbstractNeuralNet {
         outputLayer = new Layer(NeuronType.OUTPUT);
 
         // input
-        Neuron input1 = new Neuron(NeuronType.INPUT, argLearningRate);
-        Neuron input2 = new Neuron(NeuronType.INPUT, argLearningRate);
-        Neuron biasInput = new Neuron(NeuronType.INPUT, argLearningRate);
+        Neuron input1 = new Neuron(NeuronType.INPUT, argLearningRate, argMomentumTerm);
+        Neuron input2 = new Neuron(NeuronType.INPUT, argLearningRate, argMomentumTerm);
+        Neuron biasInput = new Neuron(NeuronType.INPUT, argLearningRate, argMomentumTerm);
 
         // hidden
-        Neuron neuron1 = new Neuron(NeuronType.HIDDEN, argLearningRate);
-        Neuron neuron2 = new Neuron(NeuronType.HIDDEN, argLearningRate);
-        Neuron neuron3 = new Neuron(NeuronType.HIDDEN, argLearningRate);
-        Neuron neuron4 = new Neuron(NeuronType.HIDDEN, argLearningRate);
-        Neuron output = new Neuron(NeuronType.HIDDEN, argLearningRate);
+        Neuron neuron1 = new Neuron(NeuronType.HIDDEN, argLearningRate, argMomentumTerm);
+        Neuron neuron2 = new Neuron(NeuronType.HIDDEN, argLearningRate, argMomentumTerm);
+        Neuron neuron3 = new Neuron(NeuronType.HIDDEN, argLearningRate, argMomentumTerm);
+        Neuron neuron4 = new Neuron(NeuronType.HIDDEN, argLearningRate, argMomentumTerm);
+        Neuron output = new Neuron(NeuronType.OUTPUT, argLearningRate, argMomentumTerm);
 
         inputLayer.addNeuron(input1);
         inputLayer.addNeuron(input2);
+        inputLayer.addNeuron(biasInput);
         hiddenLayer.addNeuron(neuron1);
         hiddenLayer.addNeuron(neuron2);
         hiddenLayer.addNeuron(neuron3);
@@ -60,9 +68,14 @@ public class XORNeruralNet extends AbstractNeuralNet {
 
         inputLayer.connectToLayer(hiddenLayer);
         hiddenLayer.connectToLayer(outputLayer);
-        inputLayer.initializeWeights();
-        hiddenLayer.initializeWeights();
-        outputLayer.initializeWeights();
+
+        layers.add(inputLayer);
+        layers.add(hiddenLayer);
+        layers.add(outputLayer);
+
+        for (Layer layer : layers) {
+            layer.initializeWeights();
+        }
     }
 
 
@@ -81,9 +94,9 @@ public class XORNeruralNet extends AbstractNeuralNet {
     @Override
     public double outputFor(double[] X) {
         for (Layer layer : layers) {
-            for (Neuron neuron : layer.getNeurons()) {
-                neuron.computeAndSetWeightedSum();  
-                neuron.computeAndSetOutput();
+            layer.forwardPropagation(X);
+            if (layer.getType() == NeuronType.OUTPUT) {
+                return layer.getOutput();
             }
         }
         return 0;
@@ -91,19 +104,21 @@ public class XORNeruralNet extends AbstractNeuralNet {
 
     @Override
     public double train(double[] X, double argValue) {
-        // while total error < accepted error
-        // forward, backward
-        // log total error
-        double totalError = Double.MAX_VALUE;
-        double[] errors = new double[argNumInputs];
-        double desired = 0;
-        while (totalError > desired) {
-            for (int i = 0; i < argNumInputs; i++) {
-                errors[i] = outputLayer.getOutput();
-            }
-            totalError = -1;
+        for (Layer layer : layers) {
+            layer.forwardPropagation(X);
         }
-        return 0;
+
+        for (int i = layers.size() - 1; i >= 0; i--) {
+            Layer layer = layers.get(i);
+            layer.computeAndSetErrorSignals(argValue);
+        }
+
+        for (Layer layer : layers) {
+            layer.updateWeights();
+        }
+
+        double y = outputFor(X);
+        return Math.pow(y - argValue, 2);
     }
 
     public void save(String argFileName) {

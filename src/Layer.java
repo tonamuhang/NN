@@ -50,16 +50,20 @@ public class Layer {
         this.type = type;
     }
 
-    public void forwardPropagation(double[] inputs) {
-        for (Neuron neuron : neurons) {
+    public void forwardPropagation(double[] X) {
+        for (int i = 0; i < neurons.size(); i++) {
+            Neuron neuron = neurons.get(i);
+            if (neuron.getType() == NeuronType.INPUT) {
+                setInputNeurons(X);
+            }
             neuron.computeAndSetWeightedSum();
-            neuron.computeAndSetOutput();
+            neuron.computeAndSetActivation();
         }
     }
 
-    public void backwardPropagation() {
+    public void computeAndSetErrorSignals(double C) {
         for (Neuron neuron : neurons) {
-            
+            neuron.computeAndSetErrorSignal(C);
         }
     }
 
