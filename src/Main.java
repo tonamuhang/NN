@@ -11,11 +11,14 @@ public class Main {
         int epoch = 0;
         do {
             // for each pattern, calculate error
-            for (int i = 0; i < nn.trainingData.length; i++) {
-                double[] X = nn.trainingData[i];
-                double y = nn.trainingLabels[i];
+            for (int i = 0; i < nn.trainingDataBipolar.length; i++) {
+                double[] X = nn.trainingDataBipolar[i];
+                double y = nn.trainingLabelsBipolar[i];
 
                 E += nn.train(X, y);
+                if (i == 3) {
+                    System.out.println(nn.outputFor(X));
+                }
             }
             E = E / 2;
             epoch += 1;

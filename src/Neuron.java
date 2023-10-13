@@ -73,7 +73,7 @@ public class Neuron {
 
     public void computeAndSetActivation() {
         if (type != NeuronType.INPUT) {
-            y = Utils.sigmoid(S);
+            y = Utils.sigmoid(S, true);
         }
     }
 
@@ -90,14 +90,14 @@ public class Neuron {
 
     public void computeActivation() {
         if (type != NeuronType.INPUT) {
-            y = Utils.sigmoid(S);
+            y = Utils.sigmoid(S, true);
         }
     }
 
     // Step 2: backward
     public void computeAndSetErrorSignal(double C) {
         E = 0;
-//        double fSi = y * (1 - y);
+    //    double fSi = y * (1 - y);
         double fSi = (1 - Math.pow(y, 2)) / 2;
         if (type == NeuronType.OUTPUT) {
             E = (C - y) * fSi;
